@@ -115,3 +115,73 @@ luckyButton?.addEventListener("click", () => {
     }
   }, 55);
 });
+// Mobile-first homepage and automatic pre-draw state for Bangkok draw dates.
+document.addEventListener('DOMContentLoaded', () => {
+  const hero = document.querySelector('main > .hero');
+  const checker = document.querySelector('main > #checker');
+
+  if (!hero || !checker) return;
+
+  document.body.classList.add('home-page');
+
+  const checkerTitle = checker.querySelector('.section-heading h2');
+  const checkerIntro = checker.querySelector('.section-heading p:last-child');
+  const checkerLabel = checker.querySelector('label[for="lotteryNumbers"]');
+  const numberInput = checker.querySelector('#lotteryNumbers');
+
+  if (checkerTitle) checkerTitle.textContent = 'ตรวจหวย';
+  if (checkerIntro) checkerIntro.textContent = 'กรอกเลขสลาก 6 หลัก ระบบจะตรวจเทียบกับงวดล่าสุดให้อัตโนมัติ';
+  if (checkerLabel) checkerLabel.textContent = 'กรอกเลขสลาก 6 หลัก';
+  if (numberInput) {
+    numberInput.rows = 2;
+    numberInput.placeholder = 'เช่น 730640';
+  }
+
+  const bangkokParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date()).reduce((parts, part) => {
+    parts[part.type] = part.value;
+    return parts;
+  }, {});
+
+  const day = Number(bangkokParts.day);
+  const shouldPrepareNextDraw = day === 15 || day >= 30;
+
+  if (!shouldPrepareNextDraw) return;
+
+  const currentYear = Number(bangkokParts.year);
+  const currentMonth = Number(bangkokParts.month);
+  const target = day === 15
+    ? new Date(Date.UTC(currentYear, currentMonth - 1, 16))
+    : new Date(Date.UTC(currentYear, currentMonth, 1));
+  const thaiDate = new Intl.DateTimeFormat('th-TH', {
+    timeZone: 'Asia/Bangkok',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(target);
+
+  const panel = hero.querySelector('.hero-panel');
+  if (!panel) return;
+
+  panel.classList.add('is-pending');
+  const status = panel.querySelector('.status-pill');
+  const title = panel.querySelector('.panel-title');
+  const firstPrize = panel.querySelector('.main-prize strong');
+  const minorPrizes = panel.querySelectorAll('.mini-grid strong');
+  const link = panel.querySelector('.panel-link');
+
+  if (status) status.textContent = 'เตรียมประกาศผลงวดถัดไป';
+  if (title) title.textContent = `ผลสลากกินแบ่งรัฐบาล งวดวันที่ ${thaiDate}`;
+  if (firstPrize) firstPrize.textContent = 'XXXXXX';
+  minorPrizes.forEach((number) => {
+    number.textContent = number.closest('div')?.textContent.includes('2 ตัว') ? 'XX' : 'XXX  XXX';
+  });
+  if (link) {
+    link.textContent = 'เปิดหน้ารอผลงวดถัดไป →';
+    link.href = `${document.querySelector('base')?.href || window.location.pathname.replace(/\/$/, '')}/ตรวจหวย/งวดถัดไป`;
+  }
+});
