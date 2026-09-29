@@ -71,6 +71,11 @@ form?.addEventListener("submit", async (event) => {
     }
 
     renderResults(data);
+    window.gtag?.("event", "check_lottery", {
+      draw_date: data.draw.date,
+      tickets: data.results.length,
+      winners: data.results.filter((r) => r.won).length,
+    });
   } catch {
     results.innerHTML = '<p class="empty-state">เชื่อมต่อไม่ได้ กรุณาลองใหม่อีกครั้ง</p>';
   } finally {

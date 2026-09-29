@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'google_analytics' => [
+        'id' => env('GOOGLE_ANALYTICS_ID', 'G-22CX2HGE1W'),
+    ],
+
 ];
