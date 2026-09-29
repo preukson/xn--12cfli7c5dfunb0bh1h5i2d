@@ -3,28 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Models\Draw;
+use App\Services\Lottery\DrawCalendar;
 use App\Support\ThaiDate;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Carbon;
+use Illuminate\Http\RedirectResponse;
 
 class DrawController extends Controller
 {
+    public function __construct(private DrawCalendar $calendar) {}
+
     public function home(): View
     {
-        $latest = Draw::query()->announced()->with('prizes')->latest('draw_date')->first();
+        $featured = $this->calendar->featured();
+        $latest = $featured['latest'];
 
         return view('home', [
+            'featured' => $featured,
             'latest' => $latest,
             'drawOptions' => $this->drawOptions(),
-            'archive' => Draw::query()->announced()->with('prizes')->latest('draw_date')->skip(1)->take(6)->get(),
-            'nextDrawDate' => $this->nextDrawDate(),
+            'archive' => Draw::query()->announced()->with('prizes')->latest('draw_date')
+                ->when($latest, fn ($q) => $q->where('id', '!=', $latest->id))
+                ->take(6)->get(),
         ]);
     }
 
     public function show(string $slug): View
     {
         $date = ThaiDate::fromSlug($slug) ?? abort(404);
-        $draw = Draw::query()->announced()->with('prizes')->whereDate('draw_date', $date)->firstOrFail();
+        $draw = Draw::query()->announced()->with('prizes')->whereDate('draw_date', $date)->first();
+
+        if (! $draw) {
+            return $this->upcoming($date);
+        }
 
         return view('draws.show', [
             'draw' => $draw,
@@ -32,6 +42,24 @@ class DrawController extends Controller
             'previous' => Draw::query()->announced()->where('draw_date', '<', $draw->draw_date)->latest('draw_date')->first(),
             'next' => Draw::query()->announced()->where('draw_date', '>', $draw->draw_date)->oldest('draw_date')->first(),
         ]);
+    }
+
+    /** หน้ารอผลงวดถัดไป แสดง XXXXXX จนกว่าผลจะเข้า มีเฉพาะงวดถัดไปเท่านั้น */
+    private function upcoming($date): View
+    {
+        $latest = $this->calendar->latestAnnounced();
+        abort_unless($date->isSameDay($this->calendar->upcomingDate($latest)), 404);
+
+        return view('draws.upcoming', [
+            'date' => $date,
+            'latest' => $latest,
+            'drawOptions' => $this->drawOptions(),
+        ]);
+    }
+
+    public function next(): RedirectResponse
+    {
+        return redirect('/ตรวจหวย/'.ThaiDate::slug($this->calendar->upcomingDate($this->calendar->latestAnnounced())));
     }
 
     public function index(): View
@@ -44,24 +72,13 @@ class DrawController extends Controller
     public function sitemap()
     {
         $draws = Draw::query()->announced()->latest('draw_date')->get(['draw_date', 'updated_at']);
+        $upcoming = $this->calendar->upcomingDate($draws->isEmpty() ? null : $draws->first());
 
-        return response()->view('sitemap', ['draws' => $draws])->header('Content-Type', 'application/xml');
+        return response()->view('sitemap', ['draws' => $draws, 'upcoming' => $upcoming])->header('Content-Type', 'application/xml');
     }
 
     private function drawOptions()
     {
         return Draw::query()->announced()->latest('draw_date')->take(48)->get(['id', 'draw_date']);
-    }
-
-    /** งวดถัดไปตามรอบปกติ (1 และ 16) ใช้แสดงผลเท่านั้น วันจริงอาจเลื่อนตามประกาศ GLO */
-    private function nextDrawDate(): Carbon
-    {
-        $today = now()->startOfDay();
-
-        return match (true) {
-            $today->day === 1 => $today,
-            $today->day <= 16 => $today->copy()->day(16),
-            default => $today->copy()->addMonthNoOverflow()->day(1),
-        };
     }
 }

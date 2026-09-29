@@ -86,7 +86,7 @@ class LotteryTest extends TestCase
         $this->get('/')->assertOk()->assertSee('730640');
         $this->get('/ตรวจหวย/16-กันยายน-2569')->assertOk()->assertSee('รางวัลที่ 5')->assertSee('730639');
         $this->get('/ตรวจหวย/'.rawurlencode('16-กันยายน-2569'))->assertOk();
-        $this->get('/ตรวจหวย/1-ตุลาคม-2569')->assertNotFound();
+        $this->get('/ตรวจหวย/16-ตุลาคม-2569')->assertNotFound();
         $this->get('/ตรวจหวยย้อนหลัง')->assertOk()->assertSee('730640');
         $this->get('/sitemap.xml')->assertOk()->assertSee('16-กันยายน-2569', false);
     }

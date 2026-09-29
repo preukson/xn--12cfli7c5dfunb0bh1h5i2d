@@ -142,7 +142,7 @@ a {
   max-width: 680px;
 }
 
-.hero h1,
+.hero .hero-title,
 .section-heading h2,
 .photo-copy h2,
 .agent-section h2,
@@ -152,7 +152,7 @@ a {
   letter-spacing: 0;
 }
 
-.hero h1 {
+.hero .hero-title {
   max-width: 760px;
   font-size: clamp(42px, 5.2vw, 70px);
   color: #082f6c;
@@ -895,7 +895,7 @@ select {
     background: linear-gradient(180deg, rgba(243, 250, 255, 0) 0, rgba(243, 250, 255, 0.08) 245px, #f3faff 335px);
   }
 
-  .hero h1 {
+  .hero .hero-title {
     font-size: 38px;
   }
 
@@ -1498,196 +1498,206 @@ select {
     padding: 20px 14px;
   }
 }
-/* Mobile homepage: check first, latest result second. */
-@media (max-width: 560px) {
-  .home-page main {
-    display: flex;
-    flex-direction: column;
-  }
 
-  .home-page #checker {
-    order: 1;
-    width: 100%;
-    padding: 28px 12px 20px;
-    background: #f2f8fd;
-  }
-
-  .home-page #checker .section-heading {
-    margin-bottom: 18px;
-    padding-left: 0;
-  }
-
-  .home-page #checker .section-heading::before { display: none; }
-
-  .home-page #checker .section-heading .eyebrow {
-    color: #0875cf;
-    font-size: 15px;
-  }
-
-  .home-page #checker .section-heading h2 {
-    color: #073b69;
-    font-size: 42px;
-    line-height: 1;
-  }
-
-  .home-page #checker .section-heading p:last-child {
-    margin-top: 10px;
-    font-size: 15px;
-    line-height: 1.55;
-  }
-
-  .home-page #checker .checker-layout { gap: 14px; }
-
-  .home-page #checker .checker-card {
-    padding: 16px;
-    border-color: #b9d9f2;
-  }
-
-  .home-page #checker textarea {
-    min-height: 82px;
-    font-size: 22px;
-    font-weight: 800;
-  }
-
-  .home-page #checker .form-row { display: block; }
-  .home-page #checker #drawDate { display: none; }
-
-  .home-page #checker .button {
-    min-height: 52px;
-    margin-top: 12px;
-    font-size: 17px;
-  }
-
-  .home-page #checker .hint {
-    margin-bottom: 0;
-    font-size: 12px;
-    line-height: 1.55;
-  }
-
-  .home-page #checker .results-card { min-height: 120px; }
-
-  .home-page .hero {
-    order: 2;
-    display: block;
-    min-height: 0;
-    width: 100%;
-    padding: 18px 12px 30px;
-    background: #fff;
-  }
-
-  .home-page .hero-image,
-  .home-page .hero-shade,
-  .home-page .hero-copy {
-    display: none;
-  }
-
-  .home-page .hero-panel {
-    width: 100%;
-    margin: 0;
-    padding: 20px 16px;
-    box-shadow: 0 10px 28px rgba(7, 59, 105, .1);
-  }
-
-  .home-page .hero-panel .panel-title {
-    color: #073b69;
-    font-size: 20px;
-    font-weight: 900;
-    line-height: 1.35;
-  }
-
-  .home-page .hero-panel .main-prize strong {
-    font-size: 46px;
-    letter-spacing: 2px;
-  }
-
-  .home-page .hero-panel .mini-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .home-page .hero-panel .mini-grid > div:last-child { grid-column: 1 / -1; }
-
-  .home-page .hero-panel.is-pending {
-    border-color: #efbf34;
-    background: #fffdf4;
-  }
-
-  .home-page #photo { order: 3; }
-  .home-page .agent-section { order: 4; }
-  .home-page #archive { order: 5; }
-  .home-page #news { order: 6; }
-  .home-page #lucky { order: 7; }
-  .home-page .seo-section { order: 8; }
-}
-
-.pending-draw-page {
-  min-height: calc(100vh - 150px);
-  padding: 48px 16px;
-  background: #edf7ff;
-}
-
-.pending-draw-hero {
-  width: min(820px, 100%);
-  margin: 0 auto;
-  padding: 42px;
-  border: 1px solid #b8d8ef;
-  border-radius: 8px;
-  background: #fff;
+/* ---- บอร์ดผลรางวัลบนสุด (หน้าแรก / หน้ารอผลงวดถัดไป) ---- */
+.result-board {
+  padding: 28px max(12px, calc((100% - 760px) / 2)) 32px;
+  background: radial-gradient(circle at 50% 0, #17305e 0, #0b1633 55%, #070d20 100%);
+  color: #fff;
   text-align: center;
-  box-shadow: 0 18px 46px rgba(7, 59, 105, .12);
 }
 
-.pending-draw-hero h1 {
-  margin: 6px 0 10px;
-  color: #073b69;
-  font-size: clamp(32px, 6vw, 56px);
+.result-board-title {
+  margin: 0;
+  font-size: clamp(44px, 9vw, 72px);
+  font-weight: 800;
   line-height: 1.15;
   letter-spacing: 0;
 }
 
-.pending-status,
-.pending-note { color: #60758a; }
+.result-board-date {
+  margin: 6px 0 0;
+  font-size: clamp(22px, 5vw, 32px);
+  font-weight: 800;
+  line-height: 1.35;
+}
 
-.pending-main-prize {
+.result-board-status {
+  width: fit-content;
+  margin: 14px auto 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: rgba(255, 217, 112, 0.16);
+  color: #ffd970;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.result-board-status.is-live {
+  background: #d72d4d;
+  color: #fff;
+}
+
+/* แถวบน รางวัลที่ 1 กว้างกว่าเลขท้าย 2 ตัว (6:4) แถวล่างเลข 3 ตัวกว้างเท่ากัน (5:5) */
+.result-board-grid {
   display: grid;
-  gap: 3px;
-  margin: 28px 0 16px;
-  padding: 24px;
-  border-left: 6px solid #f3bd29;
-  background: #e9f5ff;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 24px;
 }
 
-.pending-main-prize strong {
-  color: #0875cf;
-  font-size: clamp(48px, 9vw, 78px);
-  line-height: 1;
-  letter-spacing: 4px;
+.result-board-grid .result-card:nth-child(1) { grid-column: span 6; }
+.result-board-grid .result-card:nth-child(2) { grid-column: span 4; }
+.result-board-grid .result-card:nth-child(n + 3) { grid-column: span 5; }
+
+.result-card {
+  overflow: hidden;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
 }
 
-.pending-prize-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+.result-card h2 {
+  margin: 0;
+  padding: 10px 8px;
+  color: #fff;
+  font-size: clamp(18px, 4.4vw, 24px);
+  font-weight: 800;
+  line-height: 1.3;
 }
 
-.pending-prize-grid > div {
-  display: grid;
-  gap: 7px;
-  padding: 18px 12px;
-  border: 1px solid #d4e5f2;
-  border-radius: 6px;
-  background: #f9fcff;
+.result-card.is-red h2 {
+  background: linear-gradient(180deg, #e73a2f, #b8201c);
 }
 
-.pending-prize-grid strong {
-  color: #073b69;
-  font-size: 24px;
+.result-card.is-blue h2 {
+  background: linear-gradient(180deg, #2658a8, #163b7c);
 }
 
-.pending-note { margin: 24px 0 18px; }
+.result-card-numbers {
+  display: flex;
+  justify-content: center;
+  padding: 14px 6px 4px;
+}
 
-@media (max-width: 560px) {
-  .pending-draw-page { padding: 20px 12px; }
-  .pending-draw-hero { padding: 26px 16px; }
-  .pending-prize-grid { grid-template-columns: 1fr; }
+.result-card-numbers strong {
+  flex: 1;
+  font-size: clamp(30px, 8.5vw, 46px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.result-card-numbers strong + strong {
+  border-left: 1px solid #d6dbe4;
+}
+
+.result-card.is-red .result-card-numbers strong {
+  color: #cf2a22;
+}
+
+.result-card.is-first .result-card-numbers strong {
+  font-size: clamp(34px, 10vw, 58px);
+}
+
+.result-card-numbers strong.is-placeholder {
+  color: #b9c1cf !important;
+  letter-spacing: 2px;
+}
+
+.result-card small {
+  display: block;
+  padding: 2px 6px 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.result-board-all {
+  width: 100%;
+  margin-top: 18px;
+  border: 1px solid #c9ced8;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff, #e3e7ee);
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.quick-check {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.quick-check label {
+  margin-bottom: 6px;
+  color: #cfd8ea;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.quick-check-row {
+  display: flex;
+  gap: 8px;
+}
+
+.quick-check-row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 16px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.quick-check-row input::placeholder {
+  color: #9aa6ba;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.quick-check-row .button {
+  width: auto;
+  min-height: 52px;
+  border-radius: 12px;
+  padding: 0 26px;
+  background: #00a6e6;
+  font-size: 18px;
+}
+
+.quick-results:not(:empty) {
+  margin-top: 12px;
+  border-radius: 12px;
+  padding: 4px 16px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.quick-results .result-summary {
+  margin: 12px 0 4px;
+}
+
+.result-board-source {
+  margin: 16px 0 0;
+  color: #b8c5dc;
+  font-size: 14px;
+}
+
+@media (max-width: 380px) {
+  .result-board-grid {
+    gap: 10px;
+  }
+
+  .result-card-numbers strong {
+    font-size: 28px;
+  }
+
+  .result-card.is-first .result-card-numbers strong {
+    font-size: 32px;
+  }
 }

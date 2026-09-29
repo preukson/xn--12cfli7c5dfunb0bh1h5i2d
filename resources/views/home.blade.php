@@ -5,15 +5,17 @@
   use App\Support\ThaiDate;
 @endphp
 
-@section('title', 'ตรวจหวยวันนี้'.($latest ? ' งวด '.$latest->thaiDate() : '').' | ตรวจหวยเช็คสลาก.com')
+@section('title', 'ตรวจหวย งวด '.ThaiDate::long($featured['date']).' ผลสลากกินแบ่งรัฐบาล | ตรวจหวยเช็คสลาก.com')
 
 @section('content')
+  @include('partials.result-board', ['date' => $featured['date'], 'draw' => $featured['draw'], 'latest' => $latest])
+
   <section class="hero">
-    <img class="hero-image" src="{{ asset('assets/hero-lottery-ai-model.webp') }}" alt="สาวไทยกำลังใช้โทรศัพท์ตรวจสลากหลายใบ" fetchpriority="high" />
+    <img class="hero-image" src="{{ asset('assets/hero-lottery-ai-model.webp') }}" alt="สาวไทยกำลังใช้โทรศัพท์ตรวจสลากหลายใบ" loading="lazy" />
     <div class="hero-shade" aria-hidden="true"></div>
     <div class="hero-copy">
       <p class="eyebrow hero-eyebrow">ตรวจหวย ง่าย แม่นยำ รู้ผลไว</p>
-      <h1>ตรวจหวยวันนี้ ตรวจได้ทีละหลายใบในหน้าเดียว</h1>
+      <h2 class="hero-title">ตรวจหวยวันนี้ ตรวจได้ทีละหลายใบในหน้าเดียว</h2>
       <p class="lead">
         กรอกเลขสลากหลายใบพร้อมกัน ระบบตรวจครบทุกรางวัล ตั้งแต่รางวัลที่ 1 รางวัลข้างเคียง ถึงเลขท้าย 2 ตัว
         ด้วยผลจากสำนักงานสลากกินแบ่งรัฐบาลที่ดึงอัตโนมัติทุกงวด
@@ -27,25 +29,6 @@
         <span>ตรวจได้ 100 ใบต่อครั้ง</span>
         <span>ผลย้อนหลังตั้งแต่ปี 2559</span>
       </div>
-    </div>
-    <div class="hero-panel" aria-label="สรุปผลรางวัลงวดล่าสุด">
-      <div class="status-pill">งวดถัดไป {{ ThaiDate::long($nextDrawDate) }}</div>
-      @if ($latest)
-        <p class="panel-title">ผลงวด {{ $latest->thaiDate() }} · {{ $latest->statusLabel() }}</p>
-        <div class="prize-card main-prize">
-          <span>รางวัลที่ 1</span>
-          <strong>{{ $latest->numbersFor(PrizeTier::First)[0] ?? 'รอผลสด' }}</strong>
-          <small>รางวัลละ {{ number_format($latest->amountFor(PrizeTier::First) ?? 6000000) }} บาท</small>
-        </div>
-        <div class="mini-grid">
-          @foreach ([PrizeTier::Front3, PrizeTier::Back3, PrizeTier::Back2] as $tier)
-            <div><span>{{ $tier->label() }}</span><strong>{{ implode(' ', $latest->numbersFor($tier)) ?: str_repeat('-', $tier->digits()) }}</strong></div>
-          @endforeach
-        </div>
-        <a class="panel-link" href="{{ $latest->url() }}">ดูผลรางวัลครบทุกรางวัล →</a>
-      @else
-        <p class="panel-title">ยังไม่มีข้อมูลผลรางวัล</p>
-      @endif
     </div>
   </section>
 

@@ -1,7 +1,3 @@
-const form = document.querySelector("#lotteryForm");
-const input = document.querySelector("#lotteryNumbers");
-const drawSelect = document.querySelector("#drawDate");
-const results = document.querySelector("#results");
 const luckyButton = document.querySelector("#luckyButton");
 const luckyNumber = document.querySelector("#luckyNumber");
 const luckyModes = document.querySelectorAll(".lucky-modes button");
@@ -17,7 +13,7 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
-function renderResults(data) {
+function renderResults(results, data) {
   const winners = data.results.filter((r) => r.won).length;
   const summary = `
     <div class="result-summary ${winners ? "win" : ""}">
@@ -49,8 +45,19 @@ function renderResults(data) {
     summary + notices.map((n) => `<p class="notice">${n}</p>`).join("") + items;
 }
 
-form?.addEventListener("submit", async (event) => {
-  event.preventDefault();
+// ตัวตรวจหลายใบ (#lotteryForm) และช่องตรวจ 1 แถวบนบอร์ดผล ([data-check-form]) ใช้ API เดียวกัน
+function bindCheckForm(form) {
+  const results = document.querySelector(form.dataset.results || "#results");
+  const input = form.querySelector("[name=numbers]");
+  const drawSelect = form.querySelector("[name=draw_date]");
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    submitCheck(form, results, input.value, drawSelect?.value || form.dataset.drawDate || null);
+  });
+}
+
+async function submitCheck(form, results, numbers, drawDate) {
   const button = form.querySelector("button[type=submit]");
   button.disabled = true;
   results.innerHTML = '<p class="empty-state">กำลังตรวจ...</p>';
@@ -59,7 +66,7 @@ form?.addEventListener("submit", async (event) => {
     const response = await fetch(form.dataset.endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ numbers: input.value, draw_date: drawSelect?.value || null }),
+      body: JSON.stringify({ numbers, draw_date: drawDate }),
     });
     const data = await response.json();
 
@@ -70,7 +77,7 @@ form?.addEventListener("submit", async (event) => {
       return;
     }
 
-    renderResults(data);
+    renderResults(results, data);
     window.gtag?.("event", "check_lottery", {
       draw_date: data.draw.date,
       tickets: data.results.length,
@@ -81,7 +88,19 @@ form?.addEventListener("submit", async (event) => {
   } finally {
     button.disabled = false;
   }
-});
+}
+
+document.querySelectorAll("#lotteryForm, [data-check-form]").forEach(bindCheckForm);
+
+// วันออกรางวัล: รีโหลดหน้าทุก 1 นาทีตั้งแต่ 14:00 จนผลครบ (server ใส่ data-live-until เฉพาะงวดวันนี้ที่ยังไม่ครบ)
+const liveBoard = document.querySelector("[data-live-until]");
+if (liveBoard) {
+  window.setInterval(() => {
+    const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Bangkok", hour: "numeric", hourCycle: "h23" }).format(new Date()));
+    const typing = document.activeElement?.matches("input, textarea");
+    if (hour >= 14 && Date.now() / 1000 < Number(liveBoard.dataset.liveUntil) && !typing) window.location.reload();
+  }, 60000);
+}
 
 luckyModes.forEach((mode) => {
   mode.addEventListener("click", () => {
@@ -114,74 +133,4 @@ luckyButton?.addEventListener("click", () => {
       luckyButton.classList.remove("is-rolling");
     }
   }, 55);
-});
-// Mobile-first homepage and automatic pre-draw state for Bangkok draw dates.
-document.addEventListener('DOMContentLoaded', () => {
-  const hero = document.querySelector('main > .hero');
-  const checker = document.querySelector('main > #checker');
-
-  if (!hero || !checker) return;
-
-  document.body.classList.add('home-page');
-
-  const checkerTitle = checker.querySelector('.section-heading h2');
-  const checkerIntro = checker.querySelector('.section-heading p:last-child');
-  const checkerLabel = checker.querySelector('label[for="lotteryNumbers"]');
-  const numberInput = checker.querySelector('#lotteryNumbers');
-
-  if (checkerTitle) checkerTitle.textContent = 'ตรวจหวย';
-  if (checkerIntro) checkerIntro.textContent = 'กรอกเลขสลาก 6 หลัก ระบบจะตรวจเทียบกับงวดล่าสุดให้อัตโนมัติ';
-  if (checkerLabel) checkerLabel.textContent = 'กรอกเลขสลาก 6 หลัก';
-  if (numberInput) {
-    numberInput.rows = 2;
-    numberInput.placeholder = 'เช่น 730640';
-  }
-
-  const bangkokParts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Bangkok',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(new Date()).reduce((parts, part) => {
-    parts[part.type] = part.value;
-    return parts;
-  }, {});
-
-  const day = Number(bangkokParts.day);
-  const shouldPrepareNextDraw = day === 15 || day >= 30;
-
-  if (!shouldPrepareNextDraw) return;
-
-  const currentYear = Number(bangkokParts.year);
-  const currentMonth = Number(bangkokParts.month);
-  const target = day === 15
-    ? new Date(Date.UTC(currentYear, currentMonth - 1, 16))
-    : new Date(Date.UTC(currentYear, currentMonth, 1));
-  const thaiDate = new Intl.DateTimeFormat('th-TH', {
-    timeZone: 'Asia/Bangkok',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(target);
-
-  const panel = hero.querySelector('.hero-panel');
-  if (!panel) return;
-
-  panel.classList.add('is-pending');
-  const status = panel.querySelector('.status-pill');
-  const title = panel.querySelector('.panel-title');
-  const firstPrize = panel.querySelector('.main-prize strong');
-  const minorPrizes = panel.querySelectorAll('.mini-grid strong');
-  const link = panel.querySelector('.panel-link');
-
-  if (status) status.textContent = 'เตรียมประกาศผลงวดถัดไป';
-  if (title) title.textContent = `ผลสลากกินแบ่งรัฐบาล งวดวันที่ ${thaiDate}`;
-  if (firstPrize) firstPrize.textContent = 'XXXXXX';
-  minorPrizes.forEach((number) => {
-    number.textContent = number.closest('div')?.textContent.includes('2 ตัว') ? 'XX' : 'XXX  XXX';
-  });
-  if (link) {
-    link.textContent = 'เปิดหน้ารอผลงวดถัดไป →';
-    link.href = `${document.querySelector('base')?.href || window.location.pathname.replace(/\/$/, '')}/ตรวจหวย/งวดถัดไป`;
-  }
 });
