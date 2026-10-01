@@ -64,6 +64,18 @@ class DrawCalendar
         return $previousMonth->day(min(30, $previousMonth->daysInMonth));
     }
 
+    /** ถึงเวลาออกรางวัลแล้ว (14:25 ของวันงวด) แต่ผลยังไม่ครบในฐานข้อมูล */
+    public function awaitingResults(): bool
+    {
+        $latest = $this->latestAnnounced();
+
+        if ($latest && ! $latest->isComplete()) {
+            return true;
+        }
+
+        return now()->gte($this->upcomingDate($latest)->setTime(14, 25));
+    }
+
     /**
      * ข้อมูลสำหรับบอร์ดผลรางวัลด้านบนหน้าแรก
      *

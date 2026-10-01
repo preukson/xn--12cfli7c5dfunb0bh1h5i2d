@@ -7,6 +7,10 @@ use App\Services\Lottery\DrawCalendar;
 use App\Support\ThaiDate;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class DrawController extends Controller
 {
@@ -14,6 +18,7 @@ class DrawController extends Controller
 
     public function home(): View
     {
+        $this->fetchResultsIfDue();
         $featured = $this->calendar->featured();
         $latest = $featured['latest'];
 
@@ -30,6 +35,7 @@ class DrawController extends Controller
     public function show(string $slug): View
     {
         $date = ThaiDate::fromSlug($slug) ?? abort(404);
+        $this->fetchResultsIfDue();
         $draw = Draw::query()->announced()->with('prizes')->whereDate('draw_date', $date)->first();
 
         if (! $draw) {
@@ -64,6 +70,7 @@ class DrawController extends Controller
 
     public function index(): View
     {
+        $this->fetchResultsIfDue();
         $draws = Draw::query()->announced()->with('prizes')->latest('draw_date')->paginate(24);
         $featured = $this->calendar->featured();
 
@@ -80,6 +87,25 @@ class DrawController extends Controller
         $upcoming = $this->calendar->upcomingDate($draws->isEmpty() ? null : $draws->first());
 
         return response()->view('sitemap', ['draws' => $draws, 'upcoming' => $upcoming])->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * ระบบสำรองของ scheduler: ถ้าถึงเวลาออกรางวัลแล้วแต่ผลยังไม่เข้า ให้ดึงจาก GLO หลังส่งหน้าเว็บให้ผู้ใช้แล้ว
+     * ล็อกไว้ไม่เกินนาทีละครั้ง ไม่ว่าจะมีผู้เข้าชมพร้อมกันกี่คน
+     */
+    private function fetchResultsIfDue(): void
+    {
+        if (! $this->calendar->awaitingResults() || ! Cache::add('lotto:on-demand-fetch', true, 60)) {
+            return;
+        }
+
+        dispatch(function () {
+            try {
+                Artisan::call('lotto:fetch-latest');
+            } catch (Throwable $e) {
+                Log::warning('On-demand GLO fetch failed: '.$e->getMessage());
+            }
+        })->afterResponse();
     }
 
     private function drawOptions()

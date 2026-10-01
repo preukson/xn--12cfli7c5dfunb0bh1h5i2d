@@ -7,6 +7,7 @@ use App\Services\Lottery\DrawCalendar;
 use App\Services\Lottery\DrawImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class UpcomingDrawTest extends TestCase
@@ -83,6 +84,32 @@ class UpcomingDrawTest extends TestCase
         $this->get('/ตรวจหวยย้อนหลัง')->assertOk()
             ->assertSeeInOrder(['1 ต.ค. 2569 · รอผล', 'ถ่ายทอดสดวันนี้ 14:30 น.', '730640']);
         $this->get('/ตรวจหวยย้อนหลัง?page=2')->assertOk()->assertDontSee('รอผล');
+    }
+
+    public function test_page_visit_fetches_results_when_scheduler_missed_the_draw(): void
+    {
+        Carbon::setTestNow('2026-10-01 19:00');
+
+        $payload = json_decode(file_get_contents(base_path('tests/Fixtures/glo-latest-2026-09-16.json')), true);
+        $payload['response']['date'] = '2026-10-01';
+        Http::fake(['www.glo.or.th/*' => Http::response($payload)]);
+
+        $this->get('/')->assertOk();
+        Http::assertSentCount(1);
+        $this->assertSame(Draw::STATUS_OFFICIAL, Draw::query()->whereDate('draw_date', '2026-10-01')->value('status'));
+
+        // ผลเข้าแล้ว หน้าถัดไปแสดงผลจริงแทน XXXXXX และไม่ต้องดึงอีก
+        $this->assertFalse(app(DrawCalendar::class)->awaitingResults());
+        $this->get('/')->assertOk()->assertSee('1 ตุลาคม 2569')->assertSee('730640')->assertDontSee('XXXXXX');
+    }
+
+    public function test_no_fetch_before_draw_time(): void
+    {
+        Carbon::setTestNow('2026-10-01 13:00');
+        Http::fake();
+
+        $this->get('/')->assertOk();
+        Http::assertNothingSent();
     }
 
     public function test_upcoming_page_exists_only_for_next_draw(): void
