@@ -65,8 +65,13 @@ class DrawController extends Controller
     public function index(): View
     {
         $draws = Draw::query()->announced()->with('prizes')->latest('draw_date')->paginate(24);
+        $featured = $this->calendar->featured();
 
-        return view('draws.index', ['draws' => $draws]);
+        return view('draws.index', [
+            'draws' => $draws,
+            // ตั้งแต่วันที่ 15/30 จนผลออก แสดงงวดที่รอผลไว้บนสุดของหน้าแรกของรายการ
+            'upcoming' => $draws->onFirstPage() && $featured['preview'] ? $featured['upcoming'] : null,
+        ]);
     }
 
     public function sitemap()

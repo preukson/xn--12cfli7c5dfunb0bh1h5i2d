@@ -1701,3 +1701,26 @@ select {
     font-size: 32px;
   }
 }
+
+/* ---- ตารางผลครบทุกรางวัล (หน้าแรก / งวดถัดไป) และการ์ดงวดรอผลในหน้าย้อนหลัง ---- */
+.full-results .section-heading h2 {
+  font-size: clamp(24px, 4vw, 36px);
+}
+
+.number-grid li.pending {
+  color: #9aa6ba;
+  letter-spacing: 1px;
+}
+
+.archive-grid .archive-upcoming {
+  border-color: #efbf34;
+  background: #fffaf0;
+}
+
+.archive-upcoming span {
+  color: #b8201c;
+}
+
+.archive-upcoming h3 {
+  color: #9aa6ba;
+}

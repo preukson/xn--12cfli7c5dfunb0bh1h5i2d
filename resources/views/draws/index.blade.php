@@ -10,6 +10,15 @@
       <h1>ผลสลากกินแบ่งรัฐบาลย้อนหลังทุกงวด</h1>
     </div>
     <div class="archive-grid">
+      @if ($upcoming)
+        <article class="archive-upcoming">
+          <a href="{{ url('/ตรวจหวย/'.App\Support\ThaiDate::slug($upcoming)) }}">
+            <span>{{ App\Support\ThaiDate::short($upcoming) }} · รอผล</span>
+            <h3>รางวัลที่ 1: XXXXXX</h3>
+            <p>{{ $upcoming->isToday() ? 'ถ่ายทอดสดวันนี้ 14:30 น.' : 'ประกาศผล '.App\Support\ThaiDate::long($upcoming).' เวลา 14:30 น.' }} · เลขหน้า 3 ตัว XXX, XXX · เลขท้าย 3 ตัว XXX, XXX · เลขท้าย 2 ตัว XX</p>
+          </a>
+        </article>
+      @endif
       @foreach ($draws as $draw)
         @include('partials.archive-card', ['draw' => $draw])
       @endforeach

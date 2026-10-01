@@ -9,6 +9,7 @@
 
 @section('content')
   @include('partials.result-board', ['date' => $featured['date'], 'draw' => $featured['draw'], 'latest' => $latest])
+  @include('partials.full-results', ['date' => $featured['date'], 'draw' => $featured['draw']])
 
   <section class="hero">
     <img class="hero-image" src="{{ asset('assets/hero-lottery-ai-model.webp') }}" alt="สาวไทยกำลังใช้โทรศัพท์ตรวจสลากหลายใบ" loading="lazy" />

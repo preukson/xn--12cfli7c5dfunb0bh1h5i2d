@@ -72,6 +72,19 @@ class UpcomingDrawTest extends TestCase
             ->assertSee('ตรวจสลากกับงวด 16 กันยายน 2569');
     }
 
+    public function test_draw_day_shows_full_placeholder_table_and_archive_entry(): void
+    {
+        Carbon::setTestNow('2026-10-01 13:30');
+
+        $home = $this->get('/')->assertOk()->assertSee('รางวัลที่ 5');
+        // รางวัลที่ 1 + ข้างเคียง 2 + รางวัลที่ 2–5 (165) = อย่างน้อย 168 ช่อง XXXXXX
+        $this->assertGreaterThanOrEqual(168, substr_count($home->getContent(), 'XXXXXX'));
+
+        $this->get('/ตรวจหวยย้อนหลัง')->assertOk()
+            ->assertSeeInOrder(['1 ต.ค. 2569 · รอผล', 'ถ่ายทอดสดวันนี้ 14:30 น.', '730640']);
+        $this->get('/ตรวจหวยย้อนหลัง?page=2')->assertOk()->assertDontSee('รอผล');
+    }
+
     public function test_upcoming_page_exists_only_for_next_draw(): void
     {
         $this->get('/ตรวจหวย/1-ตุลาคม-2569')->assertOk()->assertSee('XXXXXX')->assertSee('XXX');

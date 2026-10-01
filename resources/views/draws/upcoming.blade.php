@@ -7,6 +7,7 @@
 
 @section('content')
   @include('partials.result-board', ['date' => $date, 'draw' => null, 'latest' => $latest])
+  @include('partials.full-results', ['date' => $date, 'draw' => null])
 
   @if ($latest)
     <section id="checker" class="checker-section">
